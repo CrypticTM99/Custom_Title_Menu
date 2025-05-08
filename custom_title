@@ -1,0 +1,153 @@
+copy and paste into your main materials section in script editor
+
+
+#==============================================================================
+# ** Custom Main Menu
+# Author: CrypticTM
+# Version: 0.8.6f
+#==============================================================================
+
+#==============================================================================
+# ** Scene_Title
+#==============================================================================
+class Scene_Title < Scene_Base
+  # Initialization
+  def start
+    super
+    create_background
+    create_window
+    create_buttons
+  end
+
+  # Create Background (Customizable)
+  def create_background
+    @background_sprite = Sprite.new
+    @background_sprite.bitmap = Cache.title1("custom_background")  # Custom background image file
+    @background_sprite.z = 0
+  end
+
+  # Create the title window and layout
+  def create_window
+    @title_window = Window_TitleCommand.new
+    @title_window.x = (Graphics.width - @title_window.width) / 2
+    @title_window.y = (Graphics.height - @title_window.height) / 2
+  end
+
+  # Create custom buttons (you can add more buttons if needed)
+  def create_buttons
+    create_start_button
+    create_exit_button
+  end
+
+  # Create Start Button
+  def create_start_button
+    @start_button = Sprite_Button.new
+    @start_button.bitmap = Cache.system("start_button")  # Custom start button graphic
+    @start_button.x = (Graphics.width - @start_button.width) / 2
+    @start_button.y = @title_window.y + @title_window.height + 20
+    @start_button.z = 10
+    @start_button.set_handler(:click, method(:on_start_button_click))
+  end
+
+  # Create Exit Button
+  def create_exit_button
+    @exit_button = Sprite_Button.new
+    @exit_button.bitmap = Cache.system("exit_button")  # Custom exit button graphic
+    @exit_button.x = (Graphics.width - @exit_button.width) / 2
+    @exit_button.y = @start_button.y + @start_button.height + 10
+    @exit_button.z = 10
+    @exit_button.set_handler(:click, method(:on_exit_button_click))
+  end
+
+  # Start button click event
+  def on_start_button_click
+    # Transition to the main menu or game
+    SceneManager.goto(Scene_Map)  # Replace with the scene you want to start
+  end
+
+  # Exit button click event
+  def on_exit_button_click
+    # Handle exit functionality (close game or navigate)
+    exit
+  end
+
+  # Update method to handle custom animations (e.g., button glow or background effects)
+  def update
+    super
+    update_buttons
+    update_background
+  end
+
+  # Update button states (hover effects or animations)
+  def update_buttons
+    update_button_state(@start_button)
+    update_button_state(@exit_button)
+  end
+
+  # Check button state for hover and apply effect
+  def update_button_state(button)
+    if button.mouse_over?
+      button.tint = Color.new(255, 255, 255, 150)  # Slight glow effect when hovered
+    else
+      button.tint = Color.new(255, 255, 255, 255)
+    end
+  end
+
+  # Update background (e.g., moving parallax effect)
+  def update_background
+    # If you want to animate the background, update its position here
+    # For example, a simple scroll effect:
+    @background_sprite.ox += 1  # Scroll the background horizontally
+  end
+
+  # Dispose of resources
+  def terminate
+    super
+    @background_sprite.dispose
+    @start_button.dispose
+    @exit_button.dispose
+  end
+end
+
+#==============================================================================
+# ** Sprite_Button Class (Custom button class to handle interactions)
+#==============================================================================
+class Sprite_Button < Sprite
+  attr_reader :clicked
+
+  def initialize
+    super
+    @clicked = false
+    @handler = nil
+    self.visible = true
+  end
+
+  # Set the handler for the button click event
+  def set_handler(event, handler)
+    case event
+    when :click
+      @handler = handler
+    end
+  end
+
+  # Check if the mouse is hovering over the button
+  def mouse_over?
+    mouse_x = Input.mouse_x
+    mouse_y = Input.mouse_y
+    mouse_x >= self.x && mouse_x <= self.x + self.width && mouse_y >= self.y && mouse_y <= self.y + self.height
+  end
+
+  # Handle mouse click
+  def update
+    super
+    if mouse_over? && Input.mouse_push?(MOUSEBUTTON_LEFT)
+      @clicked = true
+      call_handler
+    end
+  end
+
+  # Call the handler when clicked
+  def call_handler
+    @handler.call if @handler
+  end
+end
